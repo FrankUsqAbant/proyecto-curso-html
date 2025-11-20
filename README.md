@@ -3,7 +3,7 @@
 
 [GLOTTIS EL GATO](https://frankusqabant.github.io/proyecto-curso-html/)
 
-[Link](https://frankusqabant.github.io/proyecto-curso-html/)
+[Visita la pagina](https://frankusqabant.github.io/proyecto-curso-html/)
 
 Podés ver el curso completo en el siguiente video: [HTML desde Cero por Frank Abanto](https://github.com/FrankUsqAbant/proyecto-curso-html)
 
