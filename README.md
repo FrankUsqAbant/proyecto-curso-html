@@ -1,7 +1,7 @@
 
 # Glottis el gato 
 
-[GLOTTIS EL GATO](https://github.com/FrankUsqAbant/proyecto-curso-html/blob/main/assets/img/captura-pantalla-glottis.png?raw=true)
+[GLOTTIS EL GATO](https://frankusqabant.github.io/proyecto-curso-html/)
 
 [Link](https://frankusqabant.github.io/proyecto-curso-html/)
 
