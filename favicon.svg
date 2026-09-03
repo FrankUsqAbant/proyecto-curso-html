@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="faunaGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10b981"/>
+      <stop offset="0.5" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="#0b0f17"/>
+  <!-- Guardian Eyes & Code Tag -->
+  <circle cx="22" cy="28" r="6" fill="#10b981"/>
+  <circle cx="42" cy="28" r="6" fill="#f59e0b"/>
+  <circle cx="24" cy="27" r="2.5" fill="#ffffff"/>
+  <circle cx="44" cy="27" r="2.5" fill="#ffffff"/>
+  <!-- Code chevron mouth -->
+  <path d="M26 44L32 38L38 44" stroke="url(#faunaGrad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
