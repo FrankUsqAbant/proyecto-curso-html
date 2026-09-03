@@ -1,0 +1,148 @@
+/**
+ * DevFauna Academy — Editor & Sandbox CSS
+ */
+
+.sandbox-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Barra de Pestañas del Editor */
+.editor-tab-bar {
+  height: 42px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+}
+
+.editor-tabs-group {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.code-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.85rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.code-tab-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.code-tab-btn.active {
+  background: var(--editor-bg);
+  border-color: var(--border-subtle);
+  color: #ffffff;
+}
+
+.tab-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.tab-dot.html { background: var(--guardian-html); }
+.tab-dot.css  { background: var(--guardian-css); }
+.tab-dot.js   { background: var(--guardian-js); }
+
+/* Split Vertical del Sandbox (Editor arriba / Preview abajo) */
+.sandbox-split-layout {
+  flex: 1;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Editor de Código */
+.editor-code-pane {
+  position: relative;
+  display: flex;
+  background: var(--editor-bg);
+  border-bottom: 1px solid var(--border-subtle);
+  overflow: hidden;
+}
+
+.editor-textarea {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #e2e8f0;
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+  line-height: 1.6;
+  padding: 1rem 1.25rem;
+  resize: none;
+  tab-size: 2;
+  white-space: pre;
+  overflow-y: auto;
+}
+
+/* Panel de Vista Previa (Iframe) */
+.preview-pane {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.preview-bar {
+  height: 32px;
+  background: var(--bg-surface-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.85rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.preview-iframe {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #ffffff;
+}
+
+/* Barra de Consola JS */
+.sandbox-console-dock {
+  height: 70px;
+  background: #06080e;
+  border-top: 1px solid var(--border-subtle);
+  padding: 0.4rem 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  overflow-y: auto;
+  color: var(--text-secondary);
+}
+
+.console-entry {
+  line-height: 1.4;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 0.15rem 0;
+}
