@@ -1,10 +1,12 @@
 /**
  * DevFauna Academy — Orquestador Principal
+ * Conexión completa de los 3 Guardianes, 23 Retos, Test Runner y Live Code Sandbox.
  */
 
-import { HTML_LESSONS } from './data/html-lessons.js';
-import { CSS_LESSONS } from './data/css-lessons.js';
-import { JS_LESSONS } from './data/js-lessons.js';
+import { HTML_CURRICULUM } from './data/html-curriculum.js';
+import { CSS_CURRICULUM } from './data/css-curriculum.js';
+import { JS_CURRICULUM } from './data/js-curriculum.js';
+import { CodeEvaluator } from './data/code-evaluator.js';
 import { CodeSandbox } from './editor/code-sandbox.js';
 import { openSnippetsModal } from './ui/snippets-modal.js';
 
@@ -13,23 +15,30 @@ class AppController {
     this.currentGuardian = 'html'; // 'html' | 'css' | 'js'
     this.currentLessonIndex = 0;
     this.sandbox = null;
+    this.completedLessons = new Set(JSON.parse(localStorage.getItem('devfauna_completed') || '[]'));
+    this.showHint = false;
+    this.lastTestResult = null;
     this.init();
   }
 
   get lessonsMap() {
     return {
-      html: HTML_LESSONS,
-      css: CSS_LESSONS,
-      js: JS_LESSONS
+      html: HTML_CURRICULUM,
+      css: CSS_CURRICULUM,
+      js: JS_CURRICULUM
     };
   }
 
   get currentLessons() {
-    return this.lessonsMap[this.currentGuardian] || HTML_LESSONS;
+    return this.lessonsMap[this.currentGuardian] || HTML_CURRICULUM;
   }
 
   get activeLesson() {
     return this.currentLessons[this.currentLessonIndex] || this.currentLessons[0];
+  }
+
+  get totalLessonsCount() {
+    return HTML_CURRICULUM.length + CSS_CURRICULUM.length + JS_CURRICULUM.length;
   }
 
   init() {
@@ -43,7 +52,9 @@ class AppController {
           <div class="brand-icon-box">🐾</div>
           <div>
             <div class="brand-title">DevFauna Academy</div>
-            <div style="font-size: 0.68rem; color: var(--text-muted);">Trinidad Web: HTML5 • CSS3 • JavaScript</div>
+            <div style="font-size: 0.68rem; color: var(--text-muted);">
+              Dominio Web: HTML5 • CSS3 • JavaScript ES2024
+            </div>
           </div>
         </div>
 
@@ -64,6 +75,9 @@ class AppController {
         </nav>
 
         <div class="header-right-actions">
+          <div id="mastery-counter-badge" class="brand-tag" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.3);">
+            🏆 <span id="completed-count-text">${this.completedLessons.size}</span> / ${this.totalLessonsCount} Retos
+          </div>
           <button id="header-snippets-btn" class="btn-fauna btn-ghost" title="Ver Snippets Rápidos">
             <span>📜 Cheat Sheet</span>
           </button>
@@ -72,7 +86,7 @@ class AppController {
 
       <!-- 2. Main Workspace (Split 2 Columnas) -->
       <main class="main-workspace">
-        <!-- Panel Izquierdo: Lista de Retos y Teoría -->
+        <!-- Panel Izquierdo: Lista de Retos, Teoría y Test Runner -->
         <aside class="lesson-sidebar" id="lesson-sidebar-container"></aside>
 
         <!-- Panel Derecho: Live Code Sandbox -->
@@ -120,6 +134,8 @@ class AppController {
   switchGuardian(guardian) {
     this.currentGuardian = guardian;
     this.currentLessonIndex = 0;
+    this.showHint = false;
+    this.lastTestResult = null;
 
     // Actualizar tabs
     document.querySelectorAll('.guardian-tab-btn').forEach(b => {
@@ -137,6 +153,30 @@ class AppController {
     }
   }
 
+  runCodeValidation() {
+    const lesson = this.activeLesson;
+    if (!lesson || !this.sandbox) return;
+
+    const userCode = this.sandbox.getCode();
+    const result = CodeEvaluator.evaluate(userCode, lesson.tests);
+    this.lastTestResult = result;
+
+    if (result.passed) {
+      this.completedLessons.add(lesson.id);
+      localStorage.setItem('devfauna_completed', JSON.stringify([...this.completedLessons]));
+      this.updateMasteryCounter();
+    }
+
+    this.renderSidebar();
+  }
+
+  updateMasteryCounter() {
+    const counterText = document.getElementById('completed-count-text');
+    if (counterText) {
+      counterText.textContent = this.completedLessons.size;
+    }
+  }
+
   renderSidebar() {
     const sidebar = document.getElementById('lesson-sidebar-container');
     if (!sidebar) return;
@@ -149,19 +189,33 @@ class AppController {
 
     sidebar.style.setProperty('--current-guardian-color', guardianColor);
 
+    const isCompleted = this.completedLessons.has(lesson.id);
+
     sidebar.innerHTML = `
       <!-- Selector de Lecciones de este Guardián -->
       <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-        <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">
-          RETOS DEL GUARDIÁN (${lessons.length})
-        </span>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">
+            RETOS DISPONIBLES (${lessons.length})
+          </span>
+          <span style="font-size: 0.7rem; color: ${guardianColor}; font-weight: 700;">
+            ${lessons.filter(l => this.completedLessons.has(l.id)).length} de ${lessons.length} listos
+          </span>
+        </div>
+
         <div class="lessons-list-group">
-          ${lessons.map((l, idx) => `
-            <div class="lesson-pill-item ${idx === this.currentLessonIndex ? 'active' : ''}" data-index="${idx}">
-              <span>${l.title}</span>
-              <span style="font-size: 0.68rem; color: var(--text-muted);">${l.level}</span>
-            </div>
-          `).join('')}
+          ${lessons.map((l, idx) => {
+            const done = this.completedLessons.has(l.id);
+            return `
+              <div class="lesson-pill-item ${idx === this.currentLessonIndex ? 'active' : ''}" data-index="${idx}">
+                <div style="display: flex; align-items: center; gap: 0.4rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  <span>${done ? '✅' : '🐾'}</span>
+                  <span>${l.title}</span>
+                </div>
+                <span style="font-size: 0.68rem; color: var(--text-muted);">${l.level}</span>
+              </div>
+            `;
+          }).join('')}
         </div>
       </div>
 
@@ -177,8 +231,9 @@ class AppController {
         <div class="challenge-title">${lesson.title}</div>
         <p class="challenge-desc">${lesson.description}</p>
 
+        <!-- Objetivos Pedagógicos -->
         <div class="objectives-box">
-          <div class="objectives-title">Objetivos Pedagógicos</div>
+          <div class="objectives-title">Objetivos del Ejercicio</div>
           ${lesson.objectives.map(obj => `
             <div class="objective-item">
               <span style="color: ${guardianColor};">🐾</span>
@@ -188,15 +243,45 @@ class AppController {
         </div>
 
         <div style="background: rgba(255,255,255,0.02); border-left: 3px solid ${guardianColor}; padding: 0.75rem; border-radius: 4px; font-size: 0.78rem; color: var(--text-secondary); line-height: 1.45;">
-          <strong>💡 Principio Clave:</strong> ${lesson.theory}
+          <strong>💡 Fundamento:</strong> ${lesson.theory}
         </div>
 
-        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+        <!-- Feedback del Test Runner si existe -->
+        ${this.lastTestResult ? `
+          <div class="test-feedback-box ${this.lastTestResult.passed ? 'success' : 'warning'}">
+            <div style="font-weight: 800; display: flex; align-items: center; gap: 0.4rem;">
+              <span>${this.lastTestResult.passed ? '🎉 ¡RETO SUPERADO AL 100%!' : '⚠️ CASI LISTO: Revisa estos objetivos'}</span>
+            </div>
+            ${this.lastTestResult.results.map(r => `
+              <div class="test-item-row">
+                <span class="test-badge-icon">${r.passed ? '✅' : '❌'}</span>
+                <span>${r.desc}</span>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+
+        <!-- Pista si está activa -->
+        ${this.showHint ? `
+          <div class="hint-box">
+            <strong>💡 Pista de ${lesson.badge}:</strong> ${lesson.hint || 'Revisa la teoría y los objetivos arriba.'}
+          </div>
+        ` : ''}
+
+        <!-- Botón Principal del Test Runner -->
+        <button id="validate-code-btn" class="btn-fauna btn-primary" style="width: 100%; font-size: 0.85rem; padding: 0.65rem;">
+          <span>🧪 Validar Mi Código (Test Runner)</span>
+        </button>
+
+        <div style="display: flex; gap: 0.4rem;">
+          <button id="hint-toggle-btn" class="btn-fauna btn-ghost" style="flex: 1; font-size: 0.75rem;">
+            💡 ${this.showHint ? 'Ocultar Pista' : 'Pista'}
+          </button>
           <button id="reset-lesson-btn" class="btn-fauna btn-ghost" style="flex: 1; font-size: 0.75rem;">
-            ↺ Resetear Código
+            ↺ Reiniciar
           </button>
           <button id="load-solution-btn" class="btn-fauna btn-ghost" style="flex: 1; font-size: 0.75rem;">
-            ✨ Ver Solución
+            ✨ Solución
           </button>
         </div>
       </div>
@@ -207,20 +292,41 @@ class AppController {
       item.addEventListener('click', () => {
         const idx = parseInt(item.getAttribute('data-index'), 10);
         this.currentLessonIndex = idx;
+        this.showHint = false;
+        this.lastTestResult = null;
         this.renderSidebar();
         this.loadActiveLesson();
       });
     });
 
+    // Validar código con el Test Runner
+    const valBtn = sidebar.querySelector('#validate-code-btn');
+    if (valBtn) {
+      valBtn.addEventListener('click', () => {
+        this.runCodeValidation();
+      });
+    }
+
+    // Toggle Pista
+    const hintBtn = sidebar.querySelector('#hint-toggle-btn');
+    if (hintBtn) {
+      hintBtn.addEventListener('click', () => {
+        this.showHint = !this.showHint;
+        this.renderSidebar();
+      });
+    }
+
     // Resetear código
     const resetBtn = sidebar.querySelector('#reset-lesson-btn');
     if (resetBtn) {
       resetBtn.addEventListener('click', () => {
+        this.lastTestResult = null;
         this.loadActiveLesson();
+        this.renderSidebar();
       });
     }
 
-    // Ver solución si existe
+    // Ver solución
     const solutionBtn = sidebar.querySelector('#load-solution-btn');
     if (solutionBtn) {
       solutionBtn.addEventListener('click', () => {
@@ -230,8 +336,6 @@ class AppController {
             css: lesson.solutionCode.css || lesson.initialCode.css,
             js: lesson.solutionCode.js || lesson.initialCode.js
           }, true);
-        } else {
-          alert('¡El código inicial ya contiene la estructura base para resolver este reto!');
         }
       });
     }
